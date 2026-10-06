@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,8 @@ class ProjectController extends Controller
      */
     public function index(): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Liste des projets"], Response::HTTP_OK);
+        $projects = Project::latest()->get();
+        return $this->jsonResponse($projects, Response::HTTP_OK);
     }
 
     /**
@@ -21,30 +23,33 @@ class ProjectController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-       return $this->jsonResponse(['message' => "Projet créé"], Response::HTTP_CREATED);
+        $project = Project::create($request->all());
+        return $this->jsonResponse(['message' => "Projet créé", 'project' => $project], Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(int $id): JsonResponse
+    public function show(Project $project): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Projet $id trouvé"], Response::HTTP_OK);
+        return $this->jsonResponse(['project' => $project], Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, Project $project): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Projet $id mis à jour"], Response::HTTP_OK);
+        $project->update($request->all());
+        return $this->jsonResponse(['message' => "Projet {$project->id} mis à jour", 'project' => $project], Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Project $project): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Projet $id supprimé"], Response::HTTP_OK);
+        $project->deleteOrFail();
+        return $this->jsonResponse(['message' => "Projet {$project->id} supprimé", 'project' => $project], Response::HTTP_OK);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,8 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Liste des tâches"], Response::HTTP_OK);
+        $tasks = Task::latest()->get();
+        return $this->jsonResponse($tasks, Response::HTTP_OK);
     }
 
     /**
@@ -21,30 +23,34 @@ class TaskController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Tâche créée"], Response::HTTP_CREATED);
+        $task = Task::create($request->all());
+
+        return $this->jsonResponse(['message' => "Tâche créée", 'task' => $task], Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(int $id): JsonResponse
+    public function show(Task $task): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Tâche $id trouvée"], Response::HTTP_OK);
+        return $this->jsonResponse(['message' => "Tâche {$task->id} trouvée", 'task' => $task], Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, Task $task): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Tâche $id mise à jour"], Response::HTTP_OK);
+        $task->update($request->all());
+        return $this->jsonResponse(['message' => "Tâche {$task->id} mise à jour", 'task' => $task], Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Task $task): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Tâche $id supprimée"], Response::HTTP_OK);
+        $task->deleteOrFail();
+        return $this->jsonResponse(['message' => "Tâche {$task->id} supprimée", 'task' => $task], Response::HTTP_OK);
     }
 }

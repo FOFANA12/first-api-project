@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,9 +22,11 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(UserRequest $request): JsonResponse
     {
-        $user = User::create($request->all());
+        $data = $request->validated();
+
+        $user = User::create($data);
         return $this->jsonResponse(['message' => "Utilisateur créé", 'user' => $user], Response::HTTP_CREATED);
     }
 
@@ -38,9 +41,11 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user): JsonResponse
+    public function update(UserRequest $request, User $user): JsonResponse
     {
-        $user->update($request->all());
+         $data = $request->validated();
+
+        $user->update($data);
         return $this->jsonResponse(['message' => "Utilisateur {$user->id} mis à jour", 'user' => $user], Response::HTTP_OK);
     }
 

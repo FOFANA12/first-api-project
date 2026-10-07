@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\EditTaskDoneException;
+use App\Http\Requests\TaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,18 +17,19 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tasks = Task::latest()->get();
-        return $this->jsonResponse($tasks, Response::HTTP_OK);
+        $tasks = Task::with(['project'])->latest()->get();
+        return $this->jsonResponse(TaskResource::collection($tasks), Response::HTTP_OK);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(TaskRequest $request): JsonResponse
     {
-        $task = Task::create($request->all());
+        $data = $request->validated();
+        $task = Task::create($data);
 
-        return $this->jsonResponse(['message' => "Tâche créée", 'task' => $task], Response::HTTP_CREATED);
+        return $this->jsonResponse(['message' => "Tâche créée", 'task' => TaskResource::make($task)], Response::HTTP_CREATED);
     }
 
     /**
@@ -33,16 +37,21 @@ class TaskController extends Controller
      */
     public function show(Task $task): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Tâche {$task->id} trouvée", 'task' => $task], Response::HTTP_OK);
+        return $this->jsonResponse(['task' => TaskResource::make($task)], Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Task $task): JsonResponse
+    public function update(TaskRequest $request, Task $task): JsonResponse
     {
-        $task->update($request->all());
-        return $this->jsonResponse(['message' => "Tâche {$task->id} mise à jour", 'task' => $task], Response::HTTP_OK);
+        if($task->status === 'done'){
+            throw new EditTaskDoneException("Modification impossible pour une tâche terminée");
+        }
+        
+        $data = $request->validated();
+        $task->update($data);
+        return $this->jsonResponse(['message' => "Tâche {$task->id} mise à jour", 'task' => TaskResource::make($task)], Response::HTTP_OK);
     }
 
     /**
@@ -51,6 +60,6 @@ class TaskController extends Controller
     public function destroy(Task $task): JsonResponse
     {
         $task->deleteOrFail();
-        return $this->jsonResponse(['message' => "Tâche {$task->id} supprimée", 'task' => $task], Response::HTTP_OK);
+        return $this->jsonResponse(['message' => "Tâche {$task->id} supprimée", 'task' => TaskResource::make($task)], Response::HTTP_OK);
     }
 }

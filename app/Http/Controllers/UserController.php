@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,8 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Liste des utilisateurs"], Response::HTTP_OK);
+        $users = User::latest()->get();
+        return $this->jsonResponse($users, Response::HTTP_OK);
     }
 
     /**
@@ -21,30 +23,33 @@ class UserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-       return $this->jsonResponse(['message' => "Utilisateur créé"], Response::HTTP_CREATED);
+        $user = User::create($request->all());
+        return $this->jsonResponse(['message' => "Utilisateur créé", 'user' => $user], Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(int $id): JsonResponse
+    public function show(User $user): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Utilisateur $id trouvé"], Response::HTTP_OK);
+        return $this->jsonResponse(['user' => $user], Response::HTTP_OK);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, User $user): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Utilisateur $id mis à jour"], Response::HTTP_OK);
+        $user->update($request->all());
+        return $this->jsonResponse(['message' => "Utilisateur {$user->id} mis à jour", 'user' => $user], Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(User $user): JsonResponse
     {
-        return $this->jsonResponse(['message' => "Utilisateur $id supprimé"], Response::HTTP_OK);
+        $user->deleteOrFail();
+        return $this->jsonResponse(['message' => "Utilisateur {$user->id} supprimé", 'user' => $user], Response::HTTP_OK);
     }
 }

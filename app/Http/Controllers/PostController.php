@@ -13,7 +13,7 @@ class PostController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        return PostResource::collection(Post::with('user')->latest()->paginate());
+        return PostResource::collection(Post::with('user')->latest()->get());
     }
 
     public function store(PostRequest $request): JsonResponse

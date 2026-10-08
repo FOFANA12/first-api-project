@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         $users = User::factory(5)->create();
+        User::factory()->create([
+            'name' => "Admin",
+            'email' => 'admin@mail.com',
+        ]);
 
         $posts = [
             ['title' => 'Débuter avec Laravel', 'content' => 'Installation et structure d\'un projet Laravel.'],

@@ -27,13 +27,13 @@ class DatabaseSeeder extends Seeder
         User::factory(2)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Admin',
+            'email' => 'admin@mail.com',
         ]);
 
         $this->call([
             ProjectSeeder::class,
-            TaskSeeder::class
+            TaskSeeder::class,
         ]);
     }
 }
